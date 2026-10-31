@@ -10,3 +10,5 @@ For makers of prop packs, it is preferred to add these attributes to your rbxm f
 | Author              | String  | mrwd            |
 | License             | String  | CC BY-NC-SA 4.0 |
 | RequiresAttribution | Boolean | true            |
+
+Made using Sprixitite's StateWrangler as a basis
