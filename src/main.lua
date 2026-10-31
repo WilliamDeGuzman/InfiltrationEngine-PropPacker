@@ -23,6 +23,37 @@ function propPacker.OnAPIUnloaded(api: APIReference, packerState)
 	end
 end
 
+-- Load only relevant props into customprops
+function propPacker.PopulateCustomProps(mission)
+	local packAuthors = {}
+	local props = ReplicatedStorageHandler:getProps(mission:FindFirstChild("CustomPropPacks"))
+	for propname, propdata in props do
+		local clone
+		if #propdata ~= 1 then
+			for i, data in propdata do
+				if not mission.Props:FindFirstChild(propname .. "_" .. data.Author, true) then continue end
+				clone = data.Prop:Clone()
+				clone.Name = propname .. "_" .. data.Author
+				clone.Parent = mission.CustomProps
+				packAuthors[data.Author] = 1
+			end
+		elseif mission.Props:FindFirstChild(propname, true) and not mission.CustomProps:FindFirstChild(propname, true) then
+			clone = propdata[1].Prop:Clone()
+			clone.Parent = mission.CustomProps
+			packAuthors[propdata[1].Author] = 1
+		end
+	end
+	if packAuthors == {} then return end
+	local desc = mission.CustomMissionSettings:FindFirstChild("MissionDesc")
+	if not desc then return end
+	desc.Value ..= "\nUsing props from: "
+	local comma = "" -- not a comma yet
+	for author in packAuthors do
+		desc.Value ..= comma .. author
+		comma = ", "
+	end
+end
+
 function propPacker.OnPreSerialize(callbackState, invokeState, mission: Folder)
 	-- Let prefabs load customprops in first
 	local first = true
@@ -50,36 +81,8 @@ function propPacker.OnPreSerialize(callbackState, invokeState, mission: Folder)
 		v:Destroy()
 	end
 	
-	-- Load only relevant props into customprops
-	local packAuthors = {}
-	local props = ReplicatedStorageHandler:getProps(workspace.DebugMission:FindFirstChild("CustomPropPacks"))
-	for propname, propdata in props do
-		local clone
-		if #propdata ~= 1 then
-			for i, data in propdata do
-				if not mission.Props:FindFirstChild(propname .. "_" .. data.Author, true) then continue end
-				clone = data.Prop:Clone()
-				clone.Name = propname .. "_" .. data.Author
-				clone.Parent = mission.CustomProps
-				packAuthors[data.Author] = 1
-			end
-		elseif mission.Props:FindFirstChild(propname, true) and not mission.CustomProps:FindFirstChild(propname, true) then
-			clone = propdata[1].Prop:Clone()
-			clone.Parent = mission.CustomProps
-			packAuthors[propdata[1].Author] = 1
-		end
-	end
-	if packAuthors == {} then return end
-	local desc = mission.CustomMissionSettings:FindFirstChild("MissionDesc")
-	if not desc then return end
-	--Debug.clog(packAuthors)
-	desc.Value ..= "\nUsing props from: "
-	local comma = "" -- not a comma yet
-	for author in packAuthors do
-		desc.Value ..= comma .. author
-		comma = ", "
-	end
-	
+	propPacker.PopulateCustomProps(mission)
+	mission:FindFirstChild("CustomPropPacks"):Destroy()
 end
 
 APIConsumer.DoAPILoop(plugin, "PropPacker", propPacker.OnAPILoaded, propPacker.OnAPIUnloaded)
