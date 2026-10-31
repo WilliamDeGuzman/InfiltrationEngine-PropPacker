@@ -3,11 +3,6 @@ local ReplicatedStorageHandler = require(script.Parent.ReplicatedStorageHandler)
 local APIConsumer = require(script.Parent.APIConsumer)
 local PropPacksFolder
 
--- Evil and intimidating api
-local APITable = APIConsumer.WaitForAPI(520)
-print(APITable)
-type APIReference = APIConsumer.APIReference
-
 local hookName = nil
 local propPacker = {}
 
