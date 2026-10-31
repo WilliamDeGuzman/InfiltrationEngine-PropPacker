@@ -1,7 +1,7 @@
 <roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Folder" referent="RBX2057BC5E38C641569FB1C2062D77558E">
+	<Item class="Folder" referent="RBX54E4D63DF9504A1796D99ACE7573B91F">
 		<Properties>
 			<Color3 name="IconTint">
 				<R>0</R>
@@ -16,18 +16,13 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 		</Properties>
-		<Item class="Script" referent="RBXC023FDA1751B4E268E7093443F2B4A5B">
+		<Item class="Script" referent="RBX37AC3B6CBC59460F8A4E3406E2EEEE4B">
 			<Properties>
 				<ProtectedString name="Source"><![CDATA[local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ReplicatedStorageHandler = require(script.Parent.ReplicatedStorageHandler)
 local APIConsumer = require(script.Parent.APIConsumer)
-local PropPacksFolder
 
--- Evil and intimidating api
-local APITable = APIConsumer.WaitForAPI(520)
-print(APITable)
 type APIReference = APIConsumer.APIReference
-
 local hookName = nil
 local propPacker = {}
 
@@ -43,37 +38,10 @@ function propPacker.OnAPIUnloaded(api: APIReference, packerState)
 	end
 end
 
-function propPacker.OnPreSerialize(callbackState, invokeState, mission: Folder)
-	-- Let prefabs load customprops in first
-	local first = true
-	repeat
-		if not first then coroutine.yield() end
-		local _, prefabPresent = invokeState.Get("Sprix_PrefabSystem_PreSerialize_Present")
-		local prefabSuccess, prefabDone = invokeState.Get("Sprix_PrefabSystem_PreSerialize", "Done")
-		local prefabDone = (not prefabPresent) or (prefabSuccess and prefabDone)
-		first = false
-	until prefabDone
-	
-	-- create customprops folder if it does not exist
-	local CustomProps = mission:FindFirstChild("CustomProps")
-	if not CustomProps then
-		CustomProps = Instance.new("Folder")
-		CustomProps.Name = "CustomProps"
-		CustomProps.Parent = mission
-	end
-	
-	-- move elements out of CustomProps folders
-	for _, v in CustomProps:QueryDescendants("Model") do
-		v.Parent = CustomProps
-	end
-	for _, v in CustomProps:QueryDescendants("Folder") do
-		v:Destroy()
-	end
-	
-	
-	-- Load only relevant props into customprops
+-- Load only relevant props into customprops
+function propPacker.PopulateCustomProps(mission)
 	local packAuthors = {}
-	local props = ReplicatedStorageHandler:getProps(workspace.DebugMission:FindFirstChild("CustomPropPacks"))
+	local props = ReplicatedStorageHandler:getProps(mission:FindFirstChild("CustomPropPacks"))
 	for propname, propdata in props do
 		local clone
 		if #propdata ~= 1 then
@@ -93,14 +61,43 @@ function propPacker.OnPreSerialize(callbackState, invokeState, mission: Folder)
 	if packAuthors == {} then return end
 	local desc = mission.CustomMissionSettings:FindFirstChild("MissionDesc")
 	if not desc then return end
-	--Debug.clog(packAuthors)
 	desc.Value ..= "\nUsing props from: "
 	local comma = "" -- not a comma yet
 	for author in packAuthors do
 		desc.Value ..= comma .. author
 		comma = ", "
 	end
-	
+end
+
+function propPacker.OnPreSerialize(callbackState, invokeState, mission: Folder)
+	-- Let prefabs load customprops in first
+	local first = true
+	repeat
+		if not first then coroutine.yield() end
+		local _, prefabPresent = invokeState.Get("Sprix_PrefabSystem_PreSerialize_Present")
+		local prefabSuccess, prefabDone = invokeState.Get("Sprix_PrefabSystem_PreSerialize", "Done")
+		local prefabDone = (not prefabPresent) or (prefabSuccess and prefabDone)
+		first = false
+	until prefabDone
+
+	-- create customprops folder if it does not exist
+	local CustomProps = mission:FindFirstChild("CustomProps")
+	if not CustomProps then
+		CustomProps = Instance.new("Folder")
+		CustomProps.Name = "CustomProps"
+		CustomProps.Parent = mission
+	end
+
+	-- move elements out of CustomProps folders
+	for _, v in CustomProps:QueryDescendants("Model") do
+		v.Parent = CustomProps
+	end
+	for _, v in CustomProps:QueryDescendants("Folder") do
+		v:Destroy()
+	end
+
+	propPacker.PopulateCustomProps(mission)
+	mission:FindFirstChild("CustomPropPacks"):Destroy()
 end
 
 APIConsumer.DoAPILoop(plugin, "PropPacker", propPacker.OnAPILoaded, propPacker.OnAPIUnloaded)]]></ProtectedString>
@@ -117,7 +114,7 @@ APIConsumer.DoAPILoop(plugin, "PropPacker", propPacker.OnAPILoaded, propPacker.O
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="ModuleScript" referent="RBX266D67BEF9F548D0BC02E239DB4EF384">
+		<Item class="ModuleScript" referent="RBXD4BE367BD28E40AD9558188B1BB5034A">
 			<Properties>
 				<Content name="LinkedSource"><null></null></Content>
 				<ProtectedString name="Source"><![CDATA[--[[
@@ -269,7 +266,7 @@ return APIConsumer]]></ProtectedString>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="ModuleScript" referent="RBXEBF967F882F943068BAF087BD4D7B6B9">
+		<Item class="ModuleScript" referent="RBXDAA63666BA304019B39F6202C93895F3">
 			<Properties>
 				<Content name="LinkedSource"><null></null></Content>
 				<ProtectedString name="Source"><![CDATA[local Debug = {}
@@ -304,7 +301,7 @@ return Debug
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="ModuleScript" referent="RBXC2422473B5D84BFD98BF97FE1C69DC3F">
+		<Item class="ModuleScript" referent="RBX047F55F27D564967A83F6D797011D16E">
 			<Properties>
 				<Content name="LinkedSource"><null></null></Content>
 				<ProtectedString name="Source"><![CDATA[local ReplicatedStorage = game:GetService("ReplicatedStorage")
