@@ -1,8 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ReplicatedStorageHandler = require(script.Parent.ReplicatedStorageHandler)
 local APIConsumer = require(script.Parent.APIConsumer)
-local PropPacksFolder
 
+type APIReference = APIConsumer.APIReference
 local hookName = nil
 local propPacker = {}
 
@@ -59,7 +59,7 @@ function propPacker.OnPreSerialize(callbackState, invokeState, mission: Folder)
 		local prefabDone = (not prefabPresent) or (prefabSuccess and prefabDone)
 		first = false
 	until prefabDone
-	
+
 	-- create customprops folder if it does not exist
 	local CustomProps = mission:FindFirstChild("CustomProps")
 	if not CustomProps then
@@ -67,7 +67,7 @@ function propPacker.OnPreSerialize(callbackState, invokeState, mission: Folder)
 		CustomProps.Name = "CustomProps"
 		CustomProps.Parent = mission
 	end
-	
+
 	-- move elements out of CustomProps folders
 	for _, v in CustomProps:QueryDescendants("Model") do
 		v.Parent = CustomProps
@@ -75,7 +75,7 @@ function propPacker.OnPreSerialize(callbackState, invokeState, mission: Folder)
 	for _, v in CustomProps:QueryDescendants("Folder") do
 		v:Destroy()
 	end
-	
+
 	propPacker.PopulateCustomProps(mission)
 	mission:FindFirstChild("CustomPropPacks"):Destroy()
 end
